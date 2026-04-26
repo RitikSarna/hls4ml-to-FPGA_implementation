@@ -1,1 +1,10 @@
+# Core ML stack
+tensorflow==2.19.0
+tf-keras==2.19.0
+tensorflow-model-optimization==0.8.0
 
+# FPGA conversion
+hls4ml[profiling]==0.7.1
+
+# Supporting
+numpy>=1.23.0
