@@ -5,8 +5,8 @@ This repository demonstrates a complete, bare-metal hardware implementation of a
 While many tutorials conclude at the software simulation stage, this project bridges the gap between software algorithms and physical hardware. It provides a blueprint for translating a machine learning model into RTL and deploying it within a System-on-Chip (SoC) environment using an AXI-Stream data pipeline.
 
 ## Table of Contents
-1. [Phase 1: Model Translation (hls4ml)](#phase-1-model-translation-hls4ml)
-2. [Phase 2: High-Level Synthesis (Vitis HLS)](#phase-2-high-level-synthesis-vitis-hls)
+1. [Phase 1: Model Architecture & Quantization-Aware Training (QAT)](#phase-1-model-translation-hls4ml)
+2. [Phase 2: hls4ml Conversion & Vitis HLS Synthesis](#phase-2-high-level-synthesis-vitis-hls)
 3. [Phase 3: Hardware Architecture (Vivado)](#phase-3-hardware-architecture-vivado)
 4. [Results & Performance](#results--performance)
 
