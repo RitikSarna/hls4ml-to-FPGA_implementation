@@ -43,6 +43,7 @@ The core architecture consists of three main components:
 
 ## Results & Performance
 
+<img width="1628" height="766" alt="fpga_connections" src="https://github.com/user-attachments/assets/13eccedf-07ec-4c5e-bf6f-777e96942919" />
 
 ### Hardware Resource Utilization
 
