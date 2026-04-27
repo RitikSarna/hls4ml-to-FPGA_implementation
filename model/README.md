@@ -3,7 +3,7 @@
 This folder contains a **generic** binary segmentation architecture
 designed for FPGA deployment via hls4ml.
 
-## Bring Your Own Dataset
+## Dataset
 
 This repo does **not** include training data or a pre-trained model.
 The architecture constraints documented here apply to ANY binary
