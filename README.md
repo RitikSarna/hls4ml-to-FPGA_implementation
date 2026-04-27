@@ -38,14 +38,21 @@ The core architecture consists of three main components:
 * **The Data Pipeline:** Standard AXI-Stream infrastructure (including data-width converters and packet-boundary generators) is used to align the 32-bit system bus with the specific data-width requirements of the custom ML IP.
 
 ### Hardware Block Diagram
-*[Insert an image of your Vivado Block Design here. Highlight the loop: Processor -> DMA -> ML IP -> DMA]*
+<img width="1620" height="774" alt="block_diagram" src="https://github.com/user-attachments/assets/6152e99b-343a-4632-a8c4-a30468ec216e" />
 
 
 ## Results & Performance
 
 
 ### Hardware Resource Utilization
-*(Replace these values with your actual Synthesis Report data)*
-* **LUTs:** ~XX,XXX (XX%)
-* **BRAMs:** ~XX (XX%)
-* **DSPs:** ~XX (XX%)
+
+* **LUTs:** 51,977 (81%)
+* **BRAMs:** 219 (81%)
+* **DSPs:** 0 (0%)
+* **Flip-Flops (FF):** 39,399 (31%)
+
+* **WNS:** 0.102 ns
+<img width="875" height="242" alt="Screenshot 2026-04-25 144214" src="https://github.com/user-attachments/assets/10e97232-fbfa-4f8e-8010-194e9f4254f4" />
+
+* **Power:** 0.456 W
+<img width="675" height="348" alt="Screenshot 2026-04-25 144157" src="https://github.com/user-attachments/assets/a4dfb7c3-40d1-478d-aef4-03c560cc93ea" />
