@@ -46,10 +46,11 @@ To fit the model onto an Artix-7 (A7-100T) without exhausting the Look-Up Tables
 ```tcl
 config_compile -complex-mul-dsp=1   # Force DSP48E1 inference
 config_bind    -effort high         # Aggressive DSP mapping
+```
 * **C Synthesis:** Converts the C++ logic into Verilog/VHDL, mapping mathematical operations to physical hardware gates and clock cycles.
 * **Optimization:** Dataflow and pipeline pragmas are utilized to achieve high throughput and low latency.
 * **IP Export:** The verified design is packaged into the Vivado IP Catalog format, creating a standalone, reusable hardware block.
-```
+
 
 ## Phase 3: Hardware Architecture Overview (Vivado)
 The custom hls4ml IP is integrated into a complete System-on-Chip (SoC) environment using Xilinx Vivado. The system is designed to seamlessly move data from a host PC, through the FPGA memory, into the hardware accelerator, and back.
