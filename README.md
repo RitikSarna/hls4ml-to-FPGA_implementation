@@ -10,22 +10,46 @@ While many tutorials conclude at the software simulation stage, this project bri
 3. [Phase 3: Hardware Architecture (Vivado)](#phase-3-hardware-architecture-vivado)
 4. [Results & Performance](#results--performance)
 
-## Phase 1: Model Translation (hls4ml)
-The pipeline begins with a standard machine learning model trained in a Python environment. To deploy this onto an FPGA, the model must be translated into synthesizable C++ code using hls4ml.
+## Phase 1: Model Architecture & Quantization-Aware Training (QAT)
 
-* **Quantization:** The model utilizes Post-Training Quantization (PTQ) to reduce 32-bit floating-point weights to fixed-point precision. This drastically reduces DSP and BRAM utilization on the FPGA.
-* **Interface Configuration:** During the hls4ml export step, the I/O arrays are strictly configured to use AXI4-Stream (`axis`) interfaces. This ensures the model can process continuous streams of data, maximizing throughput.
+The pipeline begins with a custom binary segmentation model (`TinySegNet_FPGA`) trained in Python using `tf_keras`. Unlike standard cloud-based models, this architecture was designed from the ground up with strict FPGA hardware constraints in mind.
 
-## Phase 2: High-Level Synthesis (Vitis HLS)
-The exported C++ project is synthesized into a Register-Transfer Level (RTL) IP block using Xilinx Vitis HLS.
+### Hardware-Driven Architecture Constraints
+To ensure successful synthesis via `hls4ml`, the model adheres to specific rules:
+* **Fixed Channel Width:** The number of filters remains constant throughout the encoder and decoder. This prevents DSP overflow during skip connections.
+* **Addition over Concatenation:** Skip connections use `Add()` instead of `Concatenate()`. Concatenation doubles the channel width, which causes exponential resource scaling in hardware.
+* **Activation Limits:** Standard `ReLU` is used instead of `ReLU6`. In `hls4ml 0.7.1`, `ReLU6` lacks a streaming overload in `nnet_activation.h`, causing C-simulation crashes.
+* **Zero-Cost BatchNorm:** `BatchNormalization` is used with `use_bias=False`. These layers are completely folded into the convolutional weights during export, costing zero hardware resources.
 
-```
-vitis_hls build_prj.tcl -f
-```
+### Training & Loss
+The model utilizes **Quantization-Aware Training (QAT)** via `tfmot`. Instead of quantizing the model after training (PTQ), QAT simulates low-precision arithmetic during the forward pass, allowing the network to adapt its weights to the quantization error. 
 
+Because the target is small structural faults (a severe class imbalance between the target and background), a combined **Dice + Binary Cross-Entropy (BCE)** loss function is used to stabilize gradients and prevent the model from collapsing into an all-background prediction.
+
+## Phase 2: hls4ml Conversion & Vitis HLS Synthesis
+
+Translating a QAT-wrapped Keras model directly to C++ firmware requires a careful extraction process and specific compiler directives to prevent hardware deadlocks and synthesis failures in **Vitis HLS 2023.2**.
+
+### 1. The Conversion Script (`convert.py`)
+The provided conversion script performs several critical preprocessing steps before invoking `hls4ml`:
+* **Stripping QAT Wrappers:** It transfers the QAT-tuned weights back into a clean, unwrapped Keras model. Directly converting a QAT-wrapped model corrupts weight shapes.
+* **FIFO Depth Overrides:** In streaming hardware, skip connections must buffer the entire encoder feature map while the decoder waits. The script calculates and sets the exact BRAM FIFO depth required (`depth = (H * W * C) / 16` for 128-bit words) to prevent simulation deadlocks.
+* **Interface:** `io_type='io_stream'` is strictly enforced. `io_parallel` triggers a depth bug in `hls4ml 0.7.1` and scales synthesis time exponentially.
+
+### 2. Vitis HLS 2023.2 Compatibility Patches
+`hls4ml 0.7.1` generates C++ code with certain pragma patterns that cause silent failures in newer versions of Vitis HLS. Before running synthesis, the firmware is patched:
+* **`#pragma HLS DATAFLOW`:** Commented out in `myproject.cpp` as Vitis HLS 2023.2 aggressively rejects it for multi-fanout skip connections.
+* **`#pragma HLS ARRAY_PARTITION`:** Removed for intermediate 16K-element arrays to prevent the Vitis scheduler from crashing due to memory over-partitioning.
+
+### 3. Hardware Resource Tuning
+To fit the model onto an Artix-7 (A7-100T) without exhausting the Look-Up Tables (LUTs), we enforce aggressive DSP mapping in the `build_prj.tcl` script:
+```tcl
+config_compile -complex-mul-dsp=1   # Force DSP48E1 inference
+config_bind    -effort high         # Aggressive DSP mapping
 * **C Synthesis:** Converts the C++ logic into Verilog/VHDL, mapping mathematical operations to physical hardware gates and clock cycles.
 * **Optimization:** Dataflow and pipeline pragmas are utilized to achieve high throughput and low latency.
 * **IP Export:** The verified design is packaged into the Vivado IP Catalog format, creating a standalone, reusable hardware block.
+```
 
 ## Phase 3: Hardware Architecture Overview (Vivado)
 The custom hls4ml IP is integrated into a complete System-on-Chip (SoC) environment using Xilinx Vivado. The system is designed to seamlessly move data from a host PC, through the FPGA memory, into the hardware accelerator, and back.
