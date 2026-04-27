@@ -1,7 +1,5 @@
 # hls4ml to FPGA Implementation
 
-![Vivado](https://img.shields.io/badge/Xilinx-Vivado-red) ![Vitis HLS](https://img.shields.io/badge/Xilinx-Vitis_HLS-blue) ![hls4ml](https://img.shields.io/badge/hls4ml-enabled-brightgreen) ![Python](https://img.shields.io/badge/Python-3.8+-yellow)
-
 This repository demonstrates a complete, bare-metal hardware implementation of a neural network on a Xilinx FPGA. 
 
 While many tutorials conclude at the software simulation stage, this project bridges the gap between software algorithms and physical hardware. It provides a blueprint for translating a machine learning model into RTL and deploying it within a System-on-Chip (SoC) environment using an AXI-Stream data pipeline.
